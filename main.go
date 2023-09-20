@@ -25,8 +25,6 @@ const (
     `
 )
 
-var templateFiles = []string{"chart.html"}
-
 func main() {
 	r := gin.Default()
 
@@ -36,9 +34,7 @@ func main() {
 		return
 	}
 
-	r.LoadHTMLFiles(templateFiles...)
-
-	r.Static("/static", "./static")
+	SetupTemplatesAndStatic(r)
 	r.GET("/", handleDataRequest)
 
 	r.Run("localhost:8080")
