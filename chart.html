@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Line Chart</title>
+  <title>Electricity Chart</title>
   <!-- Include Chart.js library -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/moment@^2"></script>
@@ -9,7 +9,22 @@
 </head>
 <body>
 <!-- Create a canvas element to render the line chart -->
-<canvas id="lineChart" width="800" height="400"></canvas>
+<header>
+  <h1>Appliance Electricity Consumption</h1>
+  <p>Monitoring electricity usage for your appliance.</p>
+</header>
+
+<!-- Chart section -->
+<div class="chart-container">
+  <canvas id="lineChart" width="800" height="400"></canvas>
+</div>
+
+<!-- Filler content -->
+<section class="filler-content">
+  <h2>Consumption Data</h2>
+  <p>This chart displays the electricity consumption data for your appliance over time. You can use it to track usage patterns and optimize energy efficiency.</p>
+  <p>If there are any questions, contact me.</p>
+</section>
 
 <script>
   // Get the data passed from your Go server
@@ -58,7 +73,7 @@
         y: {
           title: {
             display: true,
-            text: 'Value'
+            text: 'Consumption'
           }
         }
       }

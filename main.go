@@ -91,7 +91,7 @@ func handleDataRequest(c *gin.Context) {
 	defer db.Close()
 
 	// Query the database to fetch the tabular data
-	rows, err := db.Query("SELECT timestamp, value FROM " + tableName)
+	rows, err := db.Query("SELECT timestamp, value FROM " + tableName + " ORDER BY timestamp")
 	if err != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
 		return
