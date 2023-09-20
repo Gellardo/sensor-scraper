@@ -4,25 +4,80 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 )
 
+const (
+	dbName         = "db.sqlite"
+	tableName      = "value_table"
+	createTableSQL = `
+        CREATE TABLE IF NOT EXISTS value_table (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp INTEGER,
+            value REAL
+        );
+    `
+)
+
 func main() {
-	// Initialize the web server
 	r := gin.Default()
 
-	// Define a route to display the line chart
+	// Initialize the database
+	if err := initializeDatabase(); err != nil {
+		fmt.Printf("Error initializing database: %v\n", err)
+		return
+	}
+
 	r.GET("/", handleDataRequest)
 
-	// Run the web server on a specific port
-	r.Run(":8080")
+	r.Run("localhost:8080")
+}
+
+func initializeDatabase() error {
+	// Check if the database file exists
+	if _, err := os.Stat(dbName); os.IsNotExist(err) {
+		// If not, create the database file and the table
+		db, err := sql.Open("sqlite3", dbName)
+		if err != nil {
+			return err
+		}
+		defer db.Close()
+
+		_, err = db.Exec(createTableSQL)
+		if err != nil {
+			return err
+		}
+		fmt.Println("Database file and table created.")
+
+		// Insert dummy values for yesterday and today if they don't exist
+		yesterday := time.Now().Add(-24 * time.Hour).Unix()
+		today := time.Now().Unix()
+
+		err = insertDummyValues(db, yesterday, 1)
+		if err != nil {
+			return err
+		}
+		err = insertDummyValues(db, today, 4)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func insertDummyValues(db *sql.DB, timestamp int64, value float64) error {
+	insertSQL := "INSERT INTO " + tableName + " (timestamp, value) VALUES (?, ?)"
+	_, err := db.Exec(insertSQL, timestamp, value)
+	return err
 }
 
 func handleDataRequest(c *gin.Context) {
 	// Open the SQLite database file
-	db, err := sql.Open("sqlite3", "your-database-file.db")
+	db, err := sql.Open("sqlite3", dbName)
 	if err != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
 		return
@@ -30,7 +85,7 @@ func handleDataRequest(c *gin.Context) {
 	defer db.Close()
 
 	// Query the database to fetch the tabular data
-	rows, err := db.Query("SELECT timestamp, value FROM your_table_name")
+	rows, err := db.Query("SELECT timestamp, value FROM " + tableName)
 	if err != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
 		return
@@ -60,6 +115,7 @@ func handleDataRequest(c *gin.Context) {
 
 		data = append(data, dataPoint)
 	}
+	fmt.Printf("Returning %d data points\n", len(data))
 
 	// Render an HTML page with the retrieved data
 	c.HTML(http.StatusOK, "chart.html", gin.H{
