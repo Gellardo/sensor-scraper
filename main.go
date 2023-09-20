@@ -38,6 +38,7 @@ func main() {
 
 	r.LoadHTMLFiles(templateFiles...)
 
+	r.Static("/static", "./static")
 	r.GET("/", handleDataRequest)
 
 	r.Run("localhost:8080")
