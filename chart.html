@@ -3,10 +3,67 @@
 <head>
   <title>Line Chart</title>
   <!-- Include Chart.js library -->
-  <!-- Add your chart configuration and data here -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/moment@^2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1"></script>
 </head>
 <body>
-<!-- Render the line chart here -->
-<canvas id="lineChart"></canvas>
+<!-- Create a canvas element to render the line chart -->
+<canvas id="lineChart" width="800" height="400"></canvas>
+
+<script>
+  // Get the data passed from your Go server
+  var jsonData = {{ .jsonData }};
+  var data = JSON.parse(jsonData);
+
+  // Extract timestamps and values from the data
+  var timestamps = data.map(function(item) {
+    return new Date(item.timestamp * 1000)
+  });
+
+  var values = data.map(function(item) {
+    return item.value;
+  });
+
+  // Create a line chart
+  var ctx = document.getElementById('lineChart').getContext('2d');
+  var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: timestamps,
+      datasets: [{
+        label: 'Value',
+        data: values,
+        borderColor: 'blue',
+        borderWidth: 1,
+        fill: false
+      }]
+    },
+    options: {
+      responsive: false, // Disable auto-resizing for better control
+      scales: {
+        x: {
+          type: 'time', // Use time scale for x-axis
+          time: {
+            unit: 'day', // Display data per day
+            displayFormats: {
+              day: 'MMM D' // Format for day display
+            }
+          },
+          title: {
+            display: true,
+            text: 'Time'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Value'
+          }
+        }
+      }
+    }
+  });
+</script>
 </body>
 </html>

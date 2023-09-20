@@ -2,7 +2,9 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"time"
@@ -23,6 +25,8 @@ const (
     `
 )
 
+var templateFiles = []string{"chart.html"}
+
 func main() {
 	r := gin.Default()
 
@@ -31,6 +35,8 @@ func main() {
 		fmt.Printf("Error initializing database: %v\n", err)
 		return
 	}
+
+	r.LoadHTMLFiles(templateFiles...)
 
 	r.GET("/", handleDataRequest)
 
@@ -105,11 +111,11 @@ func handleDataRequest(c *gin.Context) {
 		}
 
 		// Convert the timestamp to a human-readable format (e.g., RFC3339)
-		timeStr := time.Unix(timestamp, 0).Format(time.RFC3339)
+		//timeStr := time.Unix(timestamp, 0).Format(time.RFC3339)
 
 		// Store the data in a map
 		dataPoint := map[string]interface{}{
-			"timestamp": timeStr,
+			"timestamp": timestamp,
 			"value":     value,
 		}
 
@@ -117,8 +123,19 @@ func handleDataRequest(c *gin.Context) {
 	}
 	fmt.Printf("Returning %d data points\n", len(data))
 
-	// Render an HTML page with the retrieved data
+	if len(data) == 0 {
+		c.String(http.StatusOK, "No data available.")
+		return
+	}
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
+		return
+	}
+
+	// Render an HTML page with the retrieved JSON data
 	c.HTML(http.StatusOK, "chart.html", gin.H{
-		"data": data,
+		"jsonData": template.HTML(jsonData), // Use template.HTML to render as raw HTML
 	})
 }
