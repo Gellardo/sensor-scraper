@@ -1,0 +1,4 @@
+[[sensor]]
+ID=1
+URL="http://localhost:8080/ping"
+JSONPath="pong.ping"

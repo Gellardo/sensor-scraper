@@ -43,30 +43,47 @@ func extractJsonPath(haystack []byte, path string) (float64, error) {
 }
 
 func triggerScrape(c *gin.Context) {
-	url := "http://localhost:8080/ping"
-	sensorid := 1
-	jsonPath := "pong.ping"
-	resp, err := http.Get(url)
+	config, err := loadSensorConfig("config.toml")
 	if err != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
 		return
+	}
+
+	errorList := []error{}
+	for _, sensor := range config.Sensors {
+		if err = scrapeSensor(sensor); err != nil {
+			errorList = append(errorList, err)
+		}
+	}
+	if len(errorList) > 0 {
+		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", errors.Join(errorList...)))
+	}
+	c.String(http.StatusOK, "")
+}
+
+func scrapeSensor(sensor Sensor) error {
+	url := sensor.URL
+	sensorid := sensor.ID
+	jsonPath := sensor.JSONPath
+	resp, err := http.Get(url)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Error: %v", err))
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
-		return
+		return errors.New(fmt.Sprintf("Error: %v", err))
 	}
 
 	value, err := extractJsonPath(body, jsonPath)
 	if err != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
+		return errors.New(fmt.Sprintf("Error: %v", err))
 	}
 
 	db, err := sql.Open("sqlite3", dbName)
 	if err != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
+		return errors.New(fmt.Sprintf("Error: %v", err))
 	}
 	defer db.Close()
 
@@ -74,7 +91,7 @@ func triggerScrape(c *gin.Context) {
 	_, err = db.Exec("INSERT INTO "+tableName+" (timestamp, value, sensorid) VALUES (?, ?, ?)",
 		time.Now().Unix(), value, sensorid)
 	if err != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
+		return errors.New(fmt.Sprintf("Error: %v", err))
 	}
-	c.String(http.StatusOK, "")
+	return nil
 }
