@@ -19,6 +19,7 @@ const (
 	createTableSQL = `
         CREATE TABLE IF NOT EXISTS value_table (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sensorid INTEGER,
             timestamp INTEGER,
             value REAL
         );
@@ -60,11 +61,11 @@ func initializeDatabase() error {
 		yesterday := time.Now().Add(-24 * time.Hour).Unix()
 		today := time.Now().Unix()
 
-		err = insertDummyValues(db, yesterday, 1)
+		err = insertDummyValues(db, 1, yesterday, 1)
 		if err != nil {
 			return err
 		}
-		err = insertDummyValues(db, today, 4)
+		err = insertDummyValues(db, 1, today, 4)
 		if err != nil {
 			return err
 		}
@@ -72,9 +73,9 @@ func initializeDatabase() error {
 	return nil
 }
 
-func insertDummyValues(db *sql.DB, timestamp int64, value float64) error {
-	insertSQL := "INSERT INTO " + tableName + " (timestamp, value) VALUES (?, ?)"
-	_, err := db.Exec(insertSQL, timestamp, value)
+func insertDummyValues(db *sql.DB, sensorid int64, timestamp int64, value float64) error {
+	insertSQL := "INSERT INTO " + tableName + " (sensorid, timestamp, value) VALUES (?, ?, ?)"
+	_, err := db.Exec(insertSQL, sensorid, timestamp, value)
 	return err
 }
 
@@ -87,8 +88,9 @@ func handleDataRequest(c *gin.Context) {
 	}
 	defer db.Close()
 
+	sensorid := c.DefaultQuery("sensorid", "1")
 	// Query the database to fetch the tabular data
-	rows, err := db.Query("SELECT timestamp, value FROM " + tableName + " ORDER BY timestamp")
+	rows, err := db.Query("SELECT timestamp, value FROM "+tableName+" where sensorid = ? ORDER BY timestamp", sensorid)
 	if err != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
 		return
@@ -120,10 +122,6 @@ func handleDataRequest(c *gin.Context) {
 	}
 	fmt.Printf("Returning %d data points\n", len(data))
 
-	if len(data) == 0 {
-		c.String(http.StatusOK, "No data available.")
-		return
-	}
 
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -134,5 +132,6 @@ func handleDataRequest(c *gin.Context) {
 	// Render an HTML page with the retrieved JSON data
 	c.HTML(http.StatusOK, "chart.html", gin.H{
 		"jsonData": template.HTML(jsonData), // Use template.HTML to render as raw HTML
+		"sensorid": sensorid,
 	})
 }

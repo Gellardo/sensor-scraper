@@ -15,14 +15,16 @@
   <p>Monitoring electricity usage for your appliance.</p>
 </header>
 
-<!-- Chart section -->
 <div class="chart-container">
+  {{if or (eq .jsonData "null") (not .jsonData) }}
+  <p>No data</p>
+  {{else}}
   <canvas id="lineChart" width="800" height="400"></canvas>
+  {{end}}
 </div>
 
-<!-- Filler content -->
 <section class="filler-content">
-  <h2>Consumption Data</h2>
+  <h2>Consumption Data for Sensor {{.sensorid}}</h2>
   <p>This chart displays the electricity consumption data for your appliance over time. You can use it to track usage patterns and optimize energy efficiency.</p>
   <p>If there are any questions, contact me.</p>
 </section>

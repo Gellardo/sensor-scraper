@@ -12,9 +12,10 @@ insert_random_data() {
 
 
     local value=$(awk -v min=1 -v max=10 'BEGIN{srand(); print int(min+rand()*(max-min+1))}')
+    local sensor=$(( RANDOM % 3 ))
 
     # Use sqlite-utils to insert data into the specified table
-    echo "{\"timestamp\": $timestamp, \"value\": $value}" | sqlite-utils insert "$DB_FILE" "$TABLE_NAME" -
+    echo "{\"sensorid\": $sensor, \"timestamp\": $timestamp, \"value\": $value}" | sqlite-utils insert "$DB_FILE" "$TABLE_NAME" -
 }
 
 # Insert 10 random data points (adjust the number as needed)
