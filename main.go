@@ -37,6 +37,8 @@ func main() {
 
 	SetupTemplatesAndStatic(r)
 	r.GET("/", handleDataRequest)
+	r.GET("/ping", func(c *gin.Context) { c.String(http.StatusOK, "{\"pong\":{\"ping\":1.0}}") })
+	r.GET("/scrape", triggerScrape)
 
 	r.Run("localhost:8080")
 }
@@ -121,7 +123,6 @@ func handleDataRequest(c *gin.Context) {
 		data = append(data, dataPoint)
 	}
 	fmt.Printf("Returning %d data points\n", len(data))
-
 
 	jsonData, err := json.Marshal(data)
 	if err != nil {
