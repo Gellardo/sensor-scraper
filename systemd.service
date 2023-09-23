@@ -3,7 +3,7 @@ Description=Sensor Scraper and Graph
 After=network.target
 
 [Service]
-ExecStart=PWD/scraper
+ExecStart=PWD/sensor-scraper
 WorkingDirectory=PWD
 Restart=always
 User=USER

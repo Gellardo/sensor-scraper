@@ -1,4 +1,4 @@
-module example.com/scraper
+module github.com/Gellardo/sensor-scraper
 
 go 1.21.1
 
