@@ -1,11 +1,11 @@
 # Mac
 ARCH = amd64
-OS = linux
+OS = darwin
 # Raspberry Pi
 #ARCH = arm64
 #OS = linux
 
-.PHONY: install build
+.PHONY: install build clean
 build: scraper
 
 install: scraper systemd.service
@@ -14,3 +14,6 @@ install: scraper systemd.service
 
 scraper: $(shell find . -name ' *.go') $(wildcard templates/* static/*)
 	GOARCH=$(ARCH) GOOS=$(OS) go build -tags release .
+
+clean:
+	rm scraper
