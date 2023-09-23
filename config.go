@@ -7,12 +7,18 @@ import (
 )
 
 type Sensor struct {
-	ID       int
+	ID       uint
 	Name     string
 	URL      string
 	JSONPath string
 }
+
+type Scraper struct {
+	PeriodMinutes uint
+	Verbose       bool
+}
 type SensorConfig struct {
+	Scraper Scraper
 	Sensors []Sensor `toml:"sensor"`
 }
 
@@ -32,7 +38,7 @@ func validateConfig(config SensorConfig) error {
 	if len(config.Sensors) == 0 {
 		errorList = append(errorList, errors.New(fmt.Sprintf("No sensor configs found")))
 	}
-	ids := make(map[int]interface{})
+	ids := make(map[uint]interface{})
 	for _, sensor := range config.Sensors {
 		if _, missing := ids[sensor.ID]; missing {
 			errorList = append(errorList, errors.New(fmt.Sprintf("Sensor %d: Duplicate ID", sensor.ID)))

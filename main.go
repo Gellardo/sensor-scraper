@@ -37,6 +37,8 @@ func main() {
 		return
 	}
 
+	setupScraper()
+
 	SetupTemplatesAndStatic(r)
 	r.GET("/", handleHomeRequest)
 	r.GET("/graph", handleDataRequest)

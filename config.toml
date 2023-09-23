@@ -1,8 +1,12 @@
+[scraper]
+periodMinutes = 1
+verbose = true
+
 [[sensor]]
-ID=1
-Name="The important one"
-URL="http://localhost:8080/ping"
-JSONPath="pong.ping"
+id=1
+name="The important one"
+url="http://localhost:8080/ping"
+jsonPath="pong.ping"
 
 [[sensor]]
 #the failing one

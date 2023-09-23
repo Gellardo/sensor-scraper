@@ -15,6 +15,32 @@ import (
 	"time"
 )
 
+func setupScraper() {
+	config, err := loadSensorConfig("config.toml")
+	if err != nil {
+		log.Fatal("Unable to load config: %v\n", err)
+		return
+	}
+	if config.Scraper.PeriodMinutes != 0 {
+		ticker := time.NewTicker(time.Duration(config.Scraper.PeriodMinutes) * time.Minute)
+		go func() {
+			for {
+				select {
+				case <-ticker.C:
+					err := scrapeSensors(config)
+					if err != nil {
+						log.Printf("Scrape of %d sensors produced error(s): %v", len(config.Sensors), err)
+					} else if config.Scraper.Verbose {
+						log.Printf("Scrape of %d sensors successful", len(config.Sensors))
+					}
+				}
+			}
+		}()
+		log.Printf("Started automatic scraping every %d minutes", config.Scraper.PeriodMinutes)
+	}
+	log.Printf("? Started automatic scraping every %d minutes", config.Scraper.PeriodMinutes)
+}
+
 func extractJsonPath(haystack []byte, path string) (float64, error) {
 	var data map[string]interface{}
 	if err := json.Unmarshal(haystack, &data); err != nil {
@@ -51,18 +77,25 @@ func triggerScrape(c *gin.Context) {
 		return
 	}
 
+	if err = scrapeSensors(config); err != nil {
+		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
+		return
+	}
+	c.String(http.StatusOK, "")
+}
+
+func scrapeSensors(config *SensorConfig) error {
 	errorList := []error{}
 	for _, sensor := range config.Sensors {
-		if err = scrapeSensor(sensor); err != nil {
+		if err := scrapeSensor(sensor); err != nil {
 			errorList = append(errorList, err)
 		}
 	}
 	if len(errorList) > 0 {
 		log.Printf("Scraping resulted in %d errors\n", len(errorList))
-		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", errors.Join(errorList...)))
-		return
+		return errors.Join(errorList...)
 	}
-	c.String(http.StatusOK, "")
+	return nil
 }
 
 func scrapeSensor(sensor Sensor) error {
