@@ -1,4 +1,11 @@
 [[sensor]]
 ID=1
+Name="The important one"
+URL="http://localhost:8080/ping"
+JSONPath="pong.ping"
+
+[[sensor]]
+ID=2
+Name="Another"
 URL="http://localhost:8080/ping"
 JSONPath="pong.ping"

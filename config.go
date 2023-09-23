@@ -8,6 +8,7 @@ import (
 
 type Sensor struct {
 	ID       int
+	Name     string
 	URL      string
 	JSONPath string
 }

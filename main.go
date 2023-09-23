@@ -38,7 +38,8 @@ func main() {
 	}
 
 	SetupTemplatesAndStatic(r)
-	r.GET("/", handleDataRequest)
+	r.GET("/", handleHomeRequest)
+	r.GET("/graph", handleDataRequest)
 	r.GET("/ping", func(c *gin.Context) { c.String(http.StatusOK, "{\"pong\":{\"ping\":1.0}}") })
 	r.GET("/scrape", triggerScrape)
 
@@ -84,6 +85,17 @@ func insertDummyValues(db *sql.DB, sensorid int64, timestamp int64, value float6
 	return err
 }
 
+func handleHomeRequest(c *gin.Context) {
+	config, err := loadSensorConfig("config.toml")
+	if err != nil {
+		log.Printf("Unable to load config: %v\n", err)
+		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
+		return
+	}
+
+	// Render the homepage with links to graph pages
+	c.HTML(http.StatusOK, "home.html", gin.H{"sensors": config.Sensors})
+}
 func handleDataRequest(c *gin.Context) {
 	// Open the SQLite database file
 	db, err := sql.Open("sqlite3", dbName)

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sensor Homepage</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Sensor Homepage</h1>
+  <p>Monitoring electricity usage for your appliance.</p>
+</header>
+
+<section class="filler-content">
+  <h2>All your sensors</h2>
+  <ul>
+    {{ range .sensors }}
+    <li><a href="/graph?sensorid={{ .ID }}">{{ .ID }} - {{ .Name }}</a></li>
+    {{ end }}
+  </ul>
+</section>
+
+</body>
+</html>
