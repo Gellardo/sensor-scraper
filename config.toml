@@ -5,7 +5,8 @@ URL="http://localhost:8080/ping"
 JSONPath="pong.ping"
 
 [[sensor]]
+#the failing one
 ID=2
 Name="Another"
-URL="http://localhost:8080/ping"
-JSONPath="pong.ping"
+URL="http://localhost:9999/data"
+JSONPath="data.value"

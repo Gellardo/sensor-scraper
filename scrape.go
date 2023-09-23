@@ -60,6 +60,7 @@ func triggerScrape(c *gin.Context) {
 	if len(errorList) > 0 {
 		log.Printf("Scraping resulted in %d errors\n", len(errorList))
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", errors.Join(errorList...)))
+		return
 	}
 	c.String(http.StatusOK, "")
 }
