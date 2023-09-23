@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -28,10 +29,11 @@ const (
 
 func main() {
 	r := gin.Default()
+	r.Use(gin.Logger())
 
 	// Initialize the database
 	if err := initializeDatabase(); err != nil {
-		fmt.Printf("Error initializing database: %v\n", err)
+		log.Printf("Error initializing database: %v\n", err)
 		return
 	}
 
@@ -57,7 +59,7 @@ func initializeDatabase() error {
 		if err != nil {
 			return err
 		}
-		fmt.Println("Database file and table created.")
+		log.Println("Database file and table created.")
 
 		// Insert dummy values for yesterday and today if they don't exist
 		yesterday := time.Now().Add(-24 * time.Hour).Unix()
@@ -71,6 +73,7 @@ func initializeDatabase() error {
 		if err != nil {
 			return err
 		}
+		log.Println("Inserted dummy values")
 	}
 	return nil
 }
@@ -122,7 +125,7 @@ func handleDataRequest(c *gin.Context) {
 
 		data = append(data, dataPoint)
 	}
-	fmt.Printf("Returning %d data points\n", len(data))
+	log.Printf("Fetched %d data points\n", len(data))
 
 	jsonData, err := json.Marshal(data)
 	if err != nil {

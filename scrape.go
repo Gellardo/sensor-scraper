@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
+	"log"
 	"math"
 	"net/http"
 	"strconv"
@@ -45,6 +46,7 @@ func extractJsonPath(haystack []byte, path string) (float64, error) {
 func triggerScrape(c *gin.Context) {
 	config, err := loadSensorConfig("config.toml")
 	if err != nil {
+		log.Printf("Unable to load config: %v\n", err)
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
 		return
 	}
@@ -56,6 +58,7 @@ func triggerScrape(c *gin.Context) {
 		}
 	}
 	if len(errorList) > 0 {
+		log.Printf("Scraping resulted in %d errors\n", len(errorList))
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", errors.Join(errorList...)))
 	}
 	c.String(http.StatusOK, "")
@@ -93,5 +96,6 @@ func scrapeSensor(sensor Sensor) error {
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error: %v", err))
 	}
+	log.Printf("Successfully scraped sensor %d\n", sensorid)
 	return nil
 }
