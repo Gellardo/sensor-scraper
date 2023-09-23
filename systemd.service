@@ -1,0 +1,13 @@
+[Unit]
+Description=Sensor Scraper and Graph
+After=network.target
+
+[Service]
+ExecStart=PWD/scraper
+WorkingDirectory=PWD
+Restart=always
+User=USER
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+[Install]
+WantedBy=multi-user.target
