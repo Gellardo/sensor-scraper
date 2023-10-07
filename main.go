@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -108,8 +109,10 @@ func handleDataRequest(c *gin.Context) {
 	defer db.Close()
 
 	sensorid := c.DefaultQuery("sensorid", "1")
+	daysBack, _ := strconv.Atoi(c.DefaultQuery("range", "14"))
+	daysBackStr := fmt.Sprintf("-%d days", daysBack)
 	// Query the database to fetch the tabular data
-	rows, err := db.Query("SELECT timestamp, value FROM "+tableName+" where sensorid = ? ORDER BY timestamp", sensorid)
+	rows, err := db.Query("SELECT timestamp, value FROM "+tableName+" where sensorid = ? and timestamp >= strftime('%s', 'now', '"+daysBackStr+"') ORDER BY timestamp", sensorid)
 	if err != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
 		return
