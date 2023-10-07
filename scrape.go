@@ -39,6 +39,9 @@ func setupScraper() {
 		log.Printf("Started automatic scraping every %d minutes", config.Scraper.PeriodMinutes)
 	}
 	log.Printf("? Started automatic scraping every %d minutes", config.Scraper.PeriodMinutes)
+
+	// start the initial scrape immediately to detect config errors, don't stop the service though
+	scrapeSensors(config)
 }
 
 func extractJsonPath(haystack []byte, path string) (float64, error) {
@@ -57,6 +60,13 @@ func extractJsonPath(haystack []byte, path string) (float64, error) {
 
 		if next, isMap := value.(map[string]interface{}); isMap {
 			current = next
+		} else if next, isArray := value.([]interface{}); isArray {
+			// convert array to map for easier code here
+			tmp := make(map[string]interface{})
+			for i, v := range next {
+				tmp[strconv.Itoa(i)] = v
+			}
+			current = tmp
 		} else {
 			f, err := strconv.ParseFloat(fmt.Sprintf("%f", value), 64)
 			if err != nil {
