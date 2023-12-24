@@ -9,8 +9,8 @@ OS = darwin
 build: sensor-scraper
 
 install: build systemd.service
-	sed "s/PATH/$(PWD)/g; s/USER/$(USER)/g" systemd.service > /etc/systemd/system/sensor-scraper.service
-	systemd daemon-reload
+	sed "s_PWD_$(PWD)_g; s/USER/$(USER)/g" systemd.service | sudo tee /etc/systemd/system/sensor-scraper.service
+	sudo systemctl daemon-reload
 
 sensor-scraper: $(shell find . -name ' *.go') $(wildcard templates/* static/*)
 	GOARCH=$(ARCH) GOOS=$(OS) go build -tags release .

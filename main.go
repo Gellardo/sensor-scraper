@@ -46,7 +46,7 @@ func main() {
 	r.GET("/ping", func(c *gin.Context) { c.String(http.StatusOK, "{\"pong\":{\"ping\":1.0}}") })
 	r.GET("/scrape", triggerScrape)
 
-	r.Run("localhost:8080")
+	r.Run("localhost:8080") // TODO make configurable
 }
 
 func initializeDatabase() error {
