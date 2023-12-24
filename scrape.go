@@ -38,7 +38,6 @@ func setupScraper() {
 		}()
 		log.Printf("Started automatic scraping every %d minutes", config.Scraper.PeriodMinutes)
 	}
-	log.Printf("? Started automatic scraping every %d minutes", config.Scraper.PeriodMinutes)
 
 	// start the initial scrape immediately to detect config errors, don't stop the service though
 	scrapeSensors(config)
@@ -97,7 +96,7 @@ func triggerScrape(c *gin.Context) {
 func scrapeSensors(config *SensorConfig) error {
 	errorList := []error{}
 	for _, sensor := range config.Sensors {
-		if err := scrapeSensor(sensor); err != nil {
+		if err := scrapeSensor(sensor, config.Scraper.Verbose); err != nil {
 			errorList = append(errorList, err)
 		}
 	}
@@ -108,7 +107,7 @@ func scrapeSensors(config *SensorConfig) error {
 	return nil
 }
 
-func scrapeSensor(sensor Sensor) error {
+func scrapeSensor(sensor Sensor, verbose bool) error {
 	url := sensor.URL
 	sensorid := sensor.ID
 	jsonPath := sensor.JSONPath
@@ -140,6 +139,8 @@ func scrapeSensor(sensor Sensor) error {
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error: %v", err))
 	}
-	log.Printf("Successfully scraped sensor %d\n", sensorid)
+	if verbose {
+		log.Printf("Successfully scraped sensor %d\n", sensorid)
+	}
 	return nil
 }
