@@ -2,7 +2,7 @@
 ARCH = amd64
 OS = darwin
 # Raspberry Pi
-#ARCH = arm64
+#ARCH = arm
 #OS = linux
 
 .PHONY: install build clean
