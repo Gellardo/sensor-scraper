@@ -31,6 +31,7 @@ const (
 func main() {
 	r := gin.Default()
 	r.Use(gin.Logger())
+  r.SetTrustedProxies(nil)
 
 	// Initialize the database
 	if err := initializeDatabase(); err != nil {
