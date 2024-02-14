@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Electricity Chart</title>
   <!-- Include Chart.js library -->
@@ -8,83 +9,98 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1"></script>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
+
 <body>
-<!-- Create a canvas element to render the line chart -->
-<header>
-  <h1>Appliance Electricity Consumption</h1>
-  <p>
-    <a href="/" class="back-button">⇐</a>
-    Monitoring electricity usage for your appliance.
-  </p>
-</header>
+  <!-- Create a canvas element to render the line chart -->
+  <header>
+    <h1>Appliance Electricity Consumption</h1>
+    <p>
+      <a href="/" class="back-button">⇐</a>
+      Monitoring electricity usage for your appliance.
+    </p>
+  </header>
 
-<div class="chart-container">
-  {{if or (eq .jsonData "null") (not .jsonData) }}
-  <p>No data</p>
-  {{else}}
-  <canvas id="lineChart" width="800" height="400"></canvas>
-  {{end}}
-</div>
+  <div class="chart-container">
+    {{if or (eq .jsonData "null") (not .jsonData) }}
+    <p>No data</p>
+    {{else}}
+    <canvas id="lineChart" width="800" height="400"></canvas>
+    {{end}}
+  </div>
 
-<section class="filler-content">
-  <h2>Consumption Data for Sensor {{.sensorid}}</h2>
-  <p>This chart displays the electricity consumption data for your appliance over time. You can use it to track usage patterns and optimize energy efficiency.</p>
-  <p>If there are any questions, contact me.</p>
-</section>
+  <section class="filler-content">
+    <h2>Consumption Data for Sensor {{.sensorid}}</h2>
+    <p>
+      This chart displays the electricity consumption data for your appliance over time.
+      You can use it to track usage patterns and optimize energy efficiency.
+    </p>
+    <p>If there are any questions, contact me.</p>
+  </section>
 
-<script>
-  // Get the data passed from your Go server
-  var jsonData = {{ .jsonData }};
-  var data = JSON.parse(jsonData);
+  <script>
+    // Get the data passed from your Go server
+    var jsonData = {{ .jsonData }};
+    var data = JSON.parse(jsonData);
 
-  // Extract timestamps and values from the data
-  var timestamps = data.map(function(item) {
-    return new Date(item.timestamp * 1000)
-  });
+    // Extract timestamps and values from the data
+    var timestamps = data.map(function (item) {
+      return new Date(item.timestamp * 1000)
+    });
 
-  var values = data.map(function(item) {
-    return item.value;
-  });
+    var values = data.map(function (item) {
+      return item.value;
+    });
+    let lastDataPoint = values[values.length - 1];
 
-  // Create a line chart
-  var ctx = document.getElementById('lineChart').getContext('2d');
-  var myChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: timestamps,
-      datasets: [{
-        label: 'Value',
-        data: values,
-        borderColor: 'blue',
-        borderWidth: 1,
-        fill: false
-      }]
-    },
-    options: {
-      responsive: false, // Disable auto-resizing for better control
-      scales: {
-        x: {
-          type: 'time', // Use time scale for x-axis
-          time: {
-            unit: 'day', // Display data per day
-            displayFormats: {
-              day: 'MMM D' // Format for day display
+    // Create a line chart
+    var ctx = document.getElementById('lineChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: timestamps,
+        datasets: [{
+          label: 'Value',
+          data: values,
+          borderColor: 'blue',
+          borderWidth: 1,
+          fill: false
+        }]
+      },
+      options: {
+        responsive: false, // Disable auto-resizing for better control
+        scales: {
+          x: {
+            type: 'time', // Use time scale for x-axis
+            time: {
+              unit: 'day', // Display data per day
+              displayFormats: {
+                day: 'MMM D' // Format for day display
+              }
+            },
+            title: {
+              display: true,
+              text: 'Time'
             }
           },
-          title: {
-            display: true,
-            text: 'Time'
+          y: {
+            title: {
+              display: true,
+              text: 'Consumption'
+            }
           }
         },
-        y: {
-          title: {
-            display: true,
-            text: 'Consumption'
+        animation: {
+          onComplete: function (animation) {
+            animation.chart.ctx.fillText(
+              'Latest Value: ' + lastDataPoint.toLocaleString(),
+              ctx.canvas.scrollWidth - 150,
+              10,
+            );
           }
         }
       }
-    }
-  });
-</script>
+    });
+  </script>
 </body>
+
 </html>
