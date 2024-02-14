@@ -1,11 +1,16 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # Define the database file and table name
 DB_FILE="db.sqlite"
 TABLE_NAME="value_table"
 
+require() { hash "$@" || return 127; }
+require sqlite-utils
+
 # Function to insert random data into the database
-insert_random_data() {
+generate_random_entry() {
     local current_timestamp=$(date +%s)
     local two_weeks_ago=$((current_timestamp - 1209600)) # 2 weeks in seconds (60s * 60s * 24s * 14 days)
     local timestamp=$((two_weeks_ago + (RANDOM * 1337) % (current_timestamp - two_weeks_ago)))
@@ -15,10 +20,10 @@ insert_random_data() {
     local sensor=$(( RANDOM % 3 ))
 
     # Use sqlite-utils to insert data into the specified table
-    echo "{\"sensorid\": $sensor, \"timestamp\": $timestamp, \"value\": $value}" | sqlite-utils insert "$DB_FILE" "$TABLE_NAME" -
+    echo "{\"sensorid\": $sensor, \"timestamp\": $timestamp, \"value\": $value}"
 }
 
 # Insert 10 random data points (adjust the number as needed)
-for ((i=0; i<10; i++)); do
-    insert_random_data
-done
+for ((i=0; i<100; i++)); do
+    generate_random_entry
+done | sqlite-utils insert --nl "$DB_FILE" "$TABLE_NAME" -
