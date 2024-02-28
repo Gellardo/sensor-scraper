@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/glebarez/go-sqlite"
 )
 
 const (
@@ -54,7 +54,7 @@ func initializeDatabase() error {
 	// Check if the database file exists
 	if _, err := os.Stat(dbName); os.IsNotExist(err) {
 		// If not, create the database file and the table
-		db, err := sql.Open("sqlite3", dbName)
+		db, err := sql.Open("sqlite", dbName)
 		if err != nil {
 			return err
 		}
@@ -102,7 +102,7 @@ func handleHomeRequest(c *gin.Context) {
 }
 func handleDataRequest(c *gin.Context) {
 	// Open the SQLite database file
-	db, err := sql.Open("sqlite3", dbName)
+	db, err := sql.Open("sqlite", dbName)
 	if err != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
 		return
