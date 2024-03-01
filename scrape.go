@@ -28,12 +28,7 @@ func setupScraper() {
 			for {
 				select {
 				case <-ticker.C:
-					err := scrapeSensors(config)
-					if err != nil {
-						log.Printf("Scrape of %d sensors produced error(s): %v", len(config.Sensors), err)
-					} else if config.Scraper.Verbose {
-						log.Printf("Scrape of %d sensors successful", len(config.Sensors))
-					}
+					logErrors(scrapeSensors(config), config.Scraper.Verbose)
 				}
 			}
 		}()
@@ -41,7 +36,15 @@ func setupScraper() {
 	}
 
 	// start the initial scrape immediately to detect config errors, don't stop the service though
-	go scrapeSensors(config)
+	go func() { logErrors(scrapeSensors(config), config.Scraper.Verbose) }()
+}
+
+func logErrors(err error, verbose bool) {
+	if err != nil {
+		log.Printf("Scraping produced error(s): %v", err)
+	} else if verbose {
+		log.Printf("Scrape successful")
+	}
 }
 
 func extractJsonPath(haystack []byte, path string) (float64, error) {
@@ -112,7 +115,8 @@ func scrapeSensor(sensor Sensor, verbose bool) error {
 	url := sensor.URL
 	sensorid := sensor.ID
 	jsonPath := sensor.JSONPath
-	resp, err := http.Get(url)
+	client := http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Get(url)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error: %v", err))
 	}
