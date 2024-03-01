@@ -31,7 +31,7 @@ const (
 func main() {
 	r := gin.Default()
 	r.Use(gin.Logger())
-  r.SetTrustedProxies(nil)
+	r.SetTrustedProxies(nil)
 
 	// Initialize the database
 	if err := initializeDatabase(); err != nil {
@@ -47,7 +47,12 @@ func main() {
 	r.GET("/ping", func(c *gin.Context) { c.String(http.StatusOK, "{\"pong\":{\"ping\":1.0}}") })
 	r.GET("/scrape", triggerScrape)
 
-	r.Run("localhost:8080") // TODO make configurable
+	config, err := loadSensorConfig("config.toml")
+	if err != nil {
+		log.Fatal("Unable to load config: ", err)
+		return
+	}
+	r.Run(fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port))
 }
 
 func initializeDatabase() error {

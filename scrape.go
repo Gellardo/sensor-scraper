@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io"
 	"log"
 	"math"
@@ -13,12 +12,14 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func setupScraper() {
 	config, err := loadSensorConfig("config.toml")
 	if err != nil {
-		log.Fatal("Unable to load config: %v\n", err)
+		log.Fatal("Unable to load config: ", err)
 		return
 	}
 	if config.Scraper.PeriodMinutes != 0 {
@@ -40,7 +41,7 @@ func setupScraper() {
 	}
 
 	// start the initial scrape immediately to detect config errors, don't stop the service though
-	scrapeSensors(config)
+	go scrapeSensors(config)
 }
 
 func extractJsonPath(haystack []byte, path string) (float64, error) {

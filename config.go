@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+
 	"github.com/BurntSushi/toml"
 )
 
@@ -17,7 +18,12 @@ type Scraper struct {
 	PeriodMinutes uint
 	Verbose       bool
 }
+type Server struct {
+	Host string
+	Port uint
+}
 type SensorConfig struct {
+	Server  Server
 	Scraper Scraper
 	Sensors []Sensor `toml:"sensor"`
 }
@@ -27,13 +33,20 @@ func loadSensorConfig(filename string) (*SensorConfig, error) {
 	if _, err := toml.DecodeFile(filename, &config); err != nil {
 		return nil, err
 	}
-	if err := validateConfig(config); err != nil {
+	if err := validateConfig(&config); err != nil {
 		return nil, err
 	}
 	return &config, nil
 }
 
-func validateConfig(config SensorConfig) error {
+func validateConfig(config *SensorConfig) error {
+	if len(config.Server.Host) == 0 {
+		config.Server.Host = "127.0.0.1"
+	}
+	if config.Server.Port == 0 {
+		config.Server.Port = 8080
+	}
+
 	errorList := []error{}
 	if len(config.Sensors) == 0 {
 		errorList = append(errorList, errors.New(fmt.Sprintf("No sensor configs found")))
