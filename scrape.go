@@ -132,7 +132,7 @@ func scrapeSensor(sensor Sensor, verbose bool) error {
 		return errors.New(fmt.Sprintf("Error: %v", err))
 	}
 
-	db, err := sql.Open("sqlite3", dbName)
+	db, err := sql.Open("sqlite", dbName)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error: %v", err))
 	}
