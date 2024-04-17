@@ -42,6 +42,9 @@ func loadSensorConfig(filename string) (*SensorConfig, error) {
 func validateConfig(config *SensorConfig) error {
 	if len(config.Server.Host) == 0 {
 		config.Server.Host = "127.0.0.1"
+	} else if config.Server.Host == "0.0.0.0" {
+		// bind to IPv4 and IPv6
+		config.Server.Host = ""
 	}
 	if config.Server.Port == 0 {
 		config.Server.Port = 8080
