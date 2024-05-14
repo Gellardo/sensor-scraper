@@ -115,10 +115,24 @@ func handleDataRequest(c *gin.Context) {
 	defer db.Close()
 
 	sensorid := c.DefaultQuery("sensorid", "1")
-	daysBack, _ := strconv.Atoi(c.DefaultQuery("range", "14"))
+	daysBack, _ := strconv.Atoi(c.DefaultQuery("range", "7"))
 	daysBackStr := fmt.Sprintf("-%d days", daysBack)
 	// Query the database to fetch the tabular data
-	rows, err := db.Query("SELECT timestamp, value FROM "+tableName+" where sensorid = ? and timestamp >= strftime('%s', 'now', '"+daysBackStr+"') ORDER BY timestamp", sensorid)
+	rows, err := db.Query(`
+	WITH filtered_data AS (
+    SELECT timestamp, value,
+           ROW_NUMBER() OVER (ORDER BY timestamp) AS row_num,
+           avg(value) OVER (ORDER BY timestamp RANGE BETWEEN 4 * 60 PRECEDING AND 1 * 60 FOLLOWING) AS max_value_last_5_minutes,
+           COUNT(*) OVER () AS total_rows
+    FROM value_table
+    WHERE sensorid = ?
+      AND timestamp >= strftime('%s', 'now', ?)
+	)
+	SELECT timestamp, max_value_last_5_minutes as value
+	FROM filtered_data
+	WHERE row_num % (total_rows / 400) = 0
+	ORDER BY timestamp
+	`, sensorid, daysBackStr)
 	if err != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
 		return
