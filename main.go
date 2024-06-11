@@ -130,7 +130,7 @@ func handleDataRequest(c *gin.Context) {
 	)
 	SELECT timestamp, max_value_last_5_minutes as value
 	FROM filtered_data
-	WHERE row_num % (total_rows / 400) = 0
+	WHERE row_num % (total_rows / 400 + 1) = 0
 	ORDER BY timestamp
 	`, sensorid, daysBackStr)
 	if err != nil {
