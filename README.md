@@ -22,9 +22,9 @@ jsonPath="meters.0.total"
 ```
 
 ## Cross-compiling
-Cool in theory, could not get it to work in practice yet.
-Setting the right `ARCH` helps, but I could not get CGO to work yet.
-Just install golang>=1.16 instead and run `make build`.
+I could not get the CGO sqlite library to cross-compile (compiling on the target worked fine).
+But after switching to `go-sqlite`, building for ARM on Mac is no problem anymore.
+See the [Makefile](./Makefile) for details.
 
 ## Local testing
 A simple `go run .` should start the server in a development mode (aka reloading http files).
